@@ -1,0 +1,4 @@
+data/
+ll-app/Dockerfile
+docker-compose.yml
+backup/

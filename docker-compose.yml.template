@@ -1,0 +1,87 @@
+version: '3.7'
+services:
+    mongo:
+        # Dependancy specified by LearningLocker repo is ^3.2.
+        # So 3.4 is conforming to the specification
+        image: mongo:3.4
+        # ports:
+        #    - "27017:27017"
+        restart: unless-stopped
+        volumes:
+            - ${PWD}/data/ll-mongo-data:/data/db
+
+    redis:
+        # Dependancy specified by LearningLocker repo is ^2.8.11 but
+        # this version is the closest I could find as an official Docker
+        # image
+        image: redis:4-alpine
+        restart: unless-stopped
+
+    xapi:
+        # Locking dependancies at the latest image during the dev of
+        # this docker-compose.yml file.
+        image: learninglocker/xapi-service:2.2.15
+        restart: unless-stopped
+        environment:
+            - MONGO_URL=mongodb://mongo:27017/learninglocker_v2
+            - REDIS_URL=redis://redis:6379/0
+        depends_on:
+            - mongo
+            - redis
+
+    api:
+        image: DOCKER_ID_PLACEHOLDER/ll-app-api:latest-dev
+        build:
+            context: ./ll-app
+            target: api
+        restart: unless-stopped
+        depends_on:
+            - mongo
+            - redis
+        volumes:
+            - "${PWD}/data/ll-storage:/usr/local/learninglocker/ll-app/learninglocker/storage"
+
+    ui:
+        image: DOCKER_ID_PLACEHOLDER/ll-app-ui:latest-dev
+        build:
+            context: ./ll-app
+            target: ui
+        environment:
+            - "API_HOST=api"
+        restart: unless-stopped
+        depends_on:
+            - mongo
+            - redis
+            - api
+        ports:
+            - "3000:3000"
+        volumes:
+            - "${PWD}/data/ll-storage:/usr/local/learninglocker/ll-app/learninglocker/storage"
+
+    worker:
+        image: DOCKER_ID_PLACEHOLDER/ll-app-worker:latest-dev
+        build:
+            context: ./ll-app
+            target: ui
+            args:
+                - domain_name=placeholder.domain
+        restart: unless-stopped
+        depends_on:
+            - mongo
+            - redis
+        volumes:
+            - "${PWD}/data/ll-storage:/usr/local/learninglocker/ll-app/learninglocker/storage"
+
+    nginx:
+        image: DOCKER_ID_PLACEHOLDER/ll-nginx:latest-dev
+        build:
+            context: ./ll-nginx
+            args:
+                - domain_name=placeholder.name
+        restart: unless-stopped
+        depends_on:
+            - ui
+            - xapi
+        ports:
+            - "443:443"
+            - "80:80"

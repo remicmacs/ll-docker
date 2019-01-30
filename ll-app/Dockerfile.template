@@ -1,0 +1,62 @@
+# Using Ubuntu server
+FROM ubuntu:bionic as common
+# Full system upgrade
+RUN apt update && apt -y upgrade
+
+# Adding needed software
+RUN apt install -y apt-utils \
+curl \
+git \
+gnupg \
+net-tools \
+openssl
+
+# Install nodejs LTS argon like in deployll.sh script but against
+# requirements listing of repository.
+# Setup script used is from NodeSource
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
+RUN apt-get install -y nodejs
+
+# Tmp dir for build purposes
+ENV WEBAPPROOT=${WEBAPPROOT:-/usr/local/learninglocker/ll-app}
+
+# Git clone is here for rapid build test purposes. Copy down when it is
+# working
+RUN mkdir -p ${WEBAPPROOT}/
+WORKDIR ${WEBAPPROOT}
+RUN git clone https://github.com/LearningLocker/learninglocker.git
+
+# Yarn installation
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+RUN apt update && apt -y upgrade
+RUN apt-get install -y -qq yarn
+
+WORKDIR ${WEBAPPROOT}/learninglocker
+
+# Installing dependancies
+RUN yarn install
+
+# Copying template configuration file.
+# Replacement of secret and domain name.
+ARG app_secret
+ARG domain_name
+COPY .env.template .env
+ENV DOMAIN_NAME=${domain_name:-placeholder.name}
+ENV APP_SECRET=${app_secret:-pleasechangetounique256bitstring}
+RUN sed -i "s?APP_SECRET=?APP_SECRET=${APP_SECRET}?" .env
+RUN sed -i "s/SITE_URL=http:\/\/placeholder\.domain/${DOMAIN_NAME}/" .env
+
+RUN yarn build-all
+
+FROM DOCKER_ID_PLACEHOLDER/ll-app-common:latest as api
+WORKDIR ${WEBAPPROOT}/learninglocker
+CMD ["node", "api/dist/server"]
+
+FROM DOCKER_ID_PLACEHOLDER/ll-app-common:latest as ui
+WORKDIR ${WEBAPPROOT}/learninglocker
+CMD ["node", "ui/dist/server"]
+
+FROM DOCKER_ID_PLACEHOLDER/ll-app-common:latest as worker
+WORKDIR ${WEBAPPROOT}/learninglocker
+CMD ["node", "worker/dist/server"]
