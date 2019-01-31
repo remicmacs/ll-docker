@@ -17,7 +17,7 @@ openssl
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN apt-get install -y nodejs
 
-# Tmp dir for build purposes
+# Web app root, where it will be built and run.
 ENV WEBAPPROOT=${WEBAPPROOT:-/usr/local/learninglocker/ll-app}
 
 # Git clone is here for rapid build test purposes. Copy down when it is
@@ -49,6 +49,9 @@ RUN sed -i "s/SITE_URL=http:\/\/placeholder\.domain/${DOMAIN_NAME}/" .env
 
 RUN yarn build-all
 
+# Dirty multi-stage builds.
+# Would be nicer to be based on a clean Ubuntu image and copy the built app
+#  from the previous stage.
 FROM DOCKER_ID_PLACEHOLDER/ll-app-common:latest as api
 WORKDIR ${WEBAPPROOT}/learninglocker
 CMD ["node", "api/dist/server"]

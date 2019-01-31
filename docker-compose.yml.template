@@ -1,17 +1,18 @@
 version: '3.7'
 services:
     mongo:
-        # Dependancy specified by LearningLocker repo is ^3.2.
+        # Dependency specified by LearningLocker repo is ^3.2.
         # So 3.4 is conforming to the specification
         image: mongo:3.4
+        # Uncomment to open Mongo ports (for access with Compass for instance)
         # ports:
         #    - "27017:27017"
         restart: unless-stopped
         volumes:
-            - ${PWD}/data/ll-mongo-data:/data/db
+            - ${PWD:-/tmp}/data/ll-mongo-data:/data/db
 
     redis:
-        # Dependancy specified by LearningLocker repo is ^2.8.11 but
+        # Dependency specified by LearningLocker repo is ^2.8.11 but
         # this version is the closest I could find as an official Docker
         # image
         image: redis:4-alpine
@@ -38,8 +39,6 @@ services:
         depends_on:
             - mongo
             - redis
-        volumes:
-            - "${PWD}/data/ll-storage:/usr/local/learninglocker/ll-app/learninglocker/storage"
 
     ui:
         image: DOCKER_ID_PLACEHOLDER/ll-app-ui:latest-dev
@@ -55,8 +54,6 @@ services:
             - api
         ports:
             - "3000:3000"
-        volumes:
-            - "${PWD}/data/ll-storage:/usr/local/learninglocker/ll-app/learninglocker/storage"
 
     worker:
         image: DOCKER_ID_PLACEHOLDER/ll-app-worker:latest-dev
@@ -69,8 +66,6 @@ services:
         depends_on:
             - mongo
             - redis
-        volumes:
-            - "${PWD}/data/ll-storage:/usr/local/learninglocker/ll-app/learninglocker/storage"
 
     nginx:
         image: DOCKER_ID_PLACEHOLDER/ll-nginx:latest-dev
@@ -83,5 +78,5 @@ services:
             - ui
             - xapi
         ports:
-            - "443:443"
+            # - "443:443"
             - "80:80"
