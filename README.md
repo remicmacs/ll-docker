@@ -32,7 +32,6 @@ A Makefile is provided for tedious build commands.
 
 Setup environment variables in `make.env` file. Most importantly the `DOCKER_ID` variable.
 
-
 Build all things:
 
 ```bash
@@ -57,14 +56,16 @@ Site is now available at `localhost`.
 
 ### Fine tuning the build process
 
-Configuration is made with environment variables set in the `make.env` file. Some values will be overidden if not provided, other will not:
+Configuration is made with environment variables set in the `make.env` file. Some values will be overidden by the Dockerfile if not provided, other will not:
 
-| Name      | Role                                     |  Default |
-|-----------|------------------------------------------|----------|
-|VERSION    |Tag for the future built version          |latest-dev|
-|VERSION_NUM|Numerical tag for the future built version|          |
-|DOCKER_ID  |Id for DockerHub images                   |          |
-|IMAGE_NAME |Root name of the built images             |ll-app    |
+| Name      | Role                                     |Overriden value                 |
+|-----------|------------------------------------------|--------------------------------|
+|VERSION    |Tag for the future built version          |latest-dev                      |
+|VERSION_NUM|Numerical tag for the future built version|                                |
+|DOCKER_ID  |Id for DockerHub images                   |                                |
+|IMAGE_NAME |Root name of the built images             |pleasechangetounique256bitstring|
+|APP_SECRET |Secret for backend application            |                                |
+|DOMAIN_NAME|Domain name for the LL application        |placeholder.name                |
 
 Values can be overriden with command line interface:
 

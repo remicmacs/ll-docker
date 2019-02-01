@@ -9,6 +9,8 @@ configure: docker-compose.yml.template
 
 build-common: configure ll-app/.env.template
 	docker build --target common \
+		--build-arg app_secret=${APP_SECRET} \
+		--build-arg domain_name=${DOMAIN_NAME} \
 		-t $(DOCKER_ID)/$(IMAGE_NAME)-common:$(VERSION) \
 		-t $(DOCKER_ID)/$(IMAGE_NAME)-common:$(VERSION_NUM) \
 		-t $(DOCKER_ID)/$(IMAGE_NAME)-common:latest \
@@ -16,6 +18,8 @@ build-common: configure ll-app/.env.template
 
 build-ui: build-common
 	docker build --target ui \
+		--build-arg app_secret=${APP_SECRET} \
+		--build-arg domain_name=${DOMAIN_NAME} \
 		-t $(DOCKER_ID)/$(IMAGE_NAME)-ui:$(VERSION) \
 		-t $(DOCKER_ID)/$(IMAGE_NAME)-ui:$(VERSION_NUM) \
 		-t $(DOCKER_ID)/$(IMAGE_NAME)-ui:latest \
@@ -23,6 +27,8 @@ build-ui: build-common
 
 build-worker: build-common
 	docker build --target worker \
+		--build-arg app_secret=${APP_SECRET} \
+		--build-arg domain_name=${DOMAIN_NAME} \
 		-t $(DOCKER_ID)/$(IMAGE_NAME)-worker:$(VERSION) \
 		-t $(DOCKER_ID)/$(IMAGE_NAME)-worker:$(VERSION_NUM) \
 		-t $(DOCKER_ID)/$(IMAGE_NAME)-worker:latest \
@@ -30,6 +36,8 @@ build-worker: build-common
 
 build-api: build-common
 	docker build --target api \
+		--build-arg app_secret=${APP_SECRET} \
+		--build-arg domain_name=${DOMAIN_NAME} \
 		-t $(DOCKER_ID)/$(IMAGE_NAME)-api:$(VERSION) \
 		-t $(DOCKER_ID)/$(IMAGE_NAME)-api:$(VERSION_NUM) \
 		-t $(DOCKER_ID)/$(IMAGE_NAME)-api:latest \
@@ -45,3 +53,9 @@ build-nginx: ll-nginx/Dockerfile ll-nginx/nginx.conf.template
 		-f ll-nginx/Dockerfile ./ll-nginx/
 
 build-all: build-nginx build-ui build-worker build-api
+
+first-launch: build-all
+	docker-compose up -d
+	docker-compose exec api node cli/dist/server createSiteAdmin \
+		${ADMIN_CREDENTIALS_EMAIL} ${ADMIN_CREDENTIALS_ORGANISATION} \
+		${ADMIN_CREDENTIALS_PASSWORD}
