@@ -4,8 +4,7 @@ include make.env
 VERSION ?= latest-dev
 IMAGE_NAME ?= ll-app
 
-configure: ll-app/Dockerfile.template docker-compose.yml.template
-	sed "s/DOCKER_ID_PLACEHOLDER/${DOCKER_ID}/g" ll-app/Dockerfile.template > ll-app/Dockerfile
+configure: docker-compose.yml.template
 	sed "s/DOCKER_ID_PLACEHOLDER/${DOCKER_ID}/g" docker-compose.yml.template > docker-compose.yml
 
 build-common: configure ll-app/.env.template

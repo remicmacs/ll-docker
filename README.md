@@ -30,6 +30,9 @@ Because the application is structured in **services**, this Docker port is struc
 
 A Makefile is provided for tedious build commands.
 
+Setup environment variables in `make.env` file. Most importantly the `DOCKER_ID` variable.
+
+
 Build all things:
 
 ```bash
