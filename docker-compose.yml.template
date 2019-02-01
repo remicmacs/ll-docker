@@ -59,7 +59,7 @@ services:
         image: DOCKER_ID_PLACEHOLDER/ll-app-worker:latest-dev
         build:
             context: ./ll-app
-            target: ui
+            target: worker
             args:
                 - domain_name=placeholder.domain
         restart: unless-stopped
